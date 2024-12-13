@@ -2,6 +2,7 @@ package micromobility;
 
 import data.GeographicPoint;
 import data.StationID;
+import micromobility.exceptions.*;
 
 import java.net.ConnectException;
 import java.time.LocalDateTime;
