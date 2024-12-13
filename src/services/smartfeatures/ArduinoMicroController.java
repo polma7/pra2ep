@@ -1,5 +1,8 @@
 package services.smartfeatures;
 
+import micromobility.exceptions.ProceduralException;
+import services.exceptions.PMVPhisicalException;
+
 import java.net.ConnectException;
 
 public interface ArduinoMicroController {
