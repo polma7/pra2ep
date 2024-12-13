@@ -1,10 +1,18 @@
 package data;
 
+import data.exceptions.geographic.InvalidGeographicCoordinateException;
+
 final public class GeographicPoint {
     private final float latitude;
     private final float longitude;
 
-    public GeographicPoint (float lat, float lon) {
+    public GeographicPoint (float lat, float lon) throws InvalidGeographicCoordinateException {
+        if (lat < -90 || lat > 90) {
+            throw new InvalidGeographicCoordinateException("Latitude must be between -90 and 90: " + lat);
+        }
+        if (lon < -180 || lon > 180) {
+            throw new InvalidGeographicCoordinateException("Longitude must be between -180 and 180: " + lon);
+        }
         this.latitude = lat;
         this.longitude = lon;
     }
