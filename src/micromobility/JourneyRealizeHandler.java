@@ -7,6 +7,7 @@ import data.VehicleID;
 import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import micromobility.exceptions.*;
 import services.Server;
+import services.ServerClass;
 import services.smartfeatures.ArduinoMicroController;
 import services.smartfeatures.QRDecoder;
 import services.smartfeatures.UnbondedBTSignal;
@@ -16,30 +17,37 @@ import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.time.LocalDateTime;
 
-public class JourneyRealizeHandler implements Server{
+public class JourneyRealizeHandler{
     private PMVehicle vehicle;
     private JourneyService service;
-    private StationID stationID;
+    private Station station;
     private Driver driver;
+    private ServerClass server;
 
     public JourneyRealizeHandler(Driver driver){
         this.driver = driver;
+        this.server = new ServerClass();
     }
 
     // Different input events that intervene
     // User interface input events
     public void scanQR (PMVehicle vehicle) throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException, ProceduralException, InvalidGeographicCoordinateException {
-        if(this.stationID == null){
+        if(this.station.getId() == null){
             throw new ProceduralException("Station ID has not been registered correctly");
         }
         if(vehicle.getQr() == null){
             throw new CorruptedImgException("Qr code is corrupted");
         }
-        checkPMVAvail(vehicle.getVehicleID());
+        server.checkPMVAvail(vehicle.getVehicleID());
         this.service = new JourneyService();
         service.setDate();
-        service.setOrigin(stationID);
+        service.setOrigin(station.getId(),station.getGP());
         this.vehicle.setNotAvailb();
+        driver.setTripVehicle(vehicle);
+        service.setDriver(driver);
+        service.setVehicle(vehicle);
+        //Falta registerPairing en server
+        server.registerPairing(this.driver.getUserAccount(),vehicle.getVehicleID(),this.station.getId(),this.station.getGP(),service.getInitDate());
         System.out.println("Pairing done, can start driving");
     }
 
@@ -49,7 +57,7 @@ public class JourneyRealizeHandler implements Server{
     {  }
     // Input events from the unbonded Bluetooth channel
     public void broadcastStationID (StationID stID) throws ConnectException {
-        this.stationID = stID;
+        this.station.setId(stID);
     }
     // Input events from the Arduino microcontroller channel
     public void startDriving () throws ConnectException, ProceduralException {
@@ -65,35 +73,6 @@ public class JourneyRealizeHandler implements Server{
                                   LocalDateTime date)
     {  }
 
-    @Override
-    public void checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException {
-
-    }
-
-    @Override
-    public void registerPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) throws InvalidPairingArgsException, ConnectException {
-
-    }
-
-    @Override
-    public void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date, float avSp, float dist, int dur, BigDecimal imp) throws InvalidPairingArgsException, ConnectException {
-
-    }
-
-    @Override
-    public void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) {
-
-    }
-
-    @Override
-    public void unPairRegisterService(JourneyService s) throws PairingNotFoundException {
-
-    }
-
-    @Override
-    public void registerLocation(VehicleID veh, StationID st) {
-
-    }
 
 
     //(. . .) // Setter methods for injecting dependences
