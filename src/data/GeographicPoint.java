@@ -38,7 +38,7 @@ final public class GeographicPoint {
     @Override
     public String toString () {
         return "Geographic point {" + "latitude='" + latitude + '\'' +
-                "longitude='" + longitude + '}';
+                "longitude='" + longitude + "'}";
     }
 
     public double CalculateDistance(GeographicPoint gP){

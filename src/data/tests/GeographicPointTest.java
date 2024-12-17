@@ -73,7 +73,7 @@ public class GeographicPointTest {
 
     @Test
     public void testToString() throws InvalidGeographicCoordinateException {
-        GeographicPoint point = new GeographicPoint(40.7128f, -74.0060f); // Nueva York
-        assertEquals("Geographic point {latitude='40.7128'longitude='-74.0060'}", point.toString());
+        GeographicPoint point = new GeographicPoint(40.7128f, -74.006f); // Nueva York
+        assertEquals("Geographic point {latitude='40.7128'longitude='-74.006'}", point.toString());
     }
 }
