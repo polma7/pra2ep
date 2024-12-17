@@ -28,4 +28,8 @@ public class Driver {
     public void unsetTripVehicle(){
         this.tripVehicle = null;
     }
+
+    public UserAccount getUserAccount() {
+        return userAccount;
+    }
 }

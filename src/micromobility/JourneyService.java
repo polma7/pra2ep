@@ -21,6 +21,8 @@ public class JourneyService {
     //private ServiceID serviceID;
     private boolean inProgress;
     private StationID endStatID;
+    private Driver driver;
+    private PMVehicle vehicle;
 
     //??? // The constructor/s
     // All the getter methods
@@ -30,8 +32,8 @@ public class JourneyService {
         initHour = initDate.getHour();
     }
 
-    public void setOrigin(StationID stationID) throws InvalidGeographicCoordinateException {
-        this.origionPoint = new GeographicPoint(41.61674F,0.62218F);
+    public void setOrigin(StationID stationID, GeographicPoint gp) throws InvalidGeographicCoordinateException {
+        this.origionPoint = gp;
         this.origStatID  = stationID;
     }
     public void setServiceInit () throws InvalidGeographicCoordinateException {
@@ -49,4 +51,17 @@ public class JourneyService {
         this.avgSpeed = distance / duration;
         this.endHour = endDate.getHour();
     }
+
+    void setDriver(Driver driver){
+        this.driver = driver;
+    }
+
+    void setVehicle(PMVehicle vehicle){
+        this.vehicle = vehicle;
+    }
+
+    public LocalDateTime getInitDate(){
+        return this.initDate;
+    }
 }
+
