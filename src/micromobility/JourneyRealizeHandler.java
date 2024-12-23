@@ -2,25 +2,18 @@ package micromobility;
 
 import data.GeographicPoint;
 import data.StationID;
-import data.UserAccount;
-import data.VehicleID;
 import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import micromobility.exceptions.*;
-import services.Server;
 import services.ServerClass;
-import services.smartfeatures.ArduinoMicroController;
-import services.smartfeatures.QRDecoder;
-import services.smartfeatures.UnbondedBTSignal;
 
-import java.awt.image.BufferedImage;
-import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.time.LocalDateTime;
 
 public class JourneyRealizeHandler{
     private PMVehicle vehicle;
     private JourneyService service;
-    private Station station;
+    private Station startStation;
+    private Station endStation;
     private Driver driver;
     private ServerClass server;
 
@@ -32,7 +25,7 @@ public class JourneyRealizeHandler{
     // Different input events that intervene
     // User interface input events
     public void scanQR (PMVehicle vehicle) throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException, ProceduralException, InvalidGeographicCoordinateException {
-        if(this.station.getId() == null){
+        if(this.startStation.getId() == null){
             throw new ProceduralException("Station ID has not been registered correctly");
         }
         if(vehicle.getQr() == null){
@@ -41,34 +34,57 @@ public class JourneyRealizeHandler{
         server.checkPMVAvail(vehicle.getVehicleID());
         this.service = new JourneyService();
         service.setDate();
-        service.setOrigin(station.getId(),station.getGP());
+        service.setOrigin(startStation.getId(), startStation.getGP());
         this.vehicle.setNotAvailb();
         driver.setTripVehicle(vehicle);
         service.setDriver(driver);
         service.setVehicle(vehicle);
         //Falta registerPairing en server
-        server.registerPairing(this.driver.getUserAccount(),vehicle.getVehicleID(),this.station.getId(),this.station.getGP(),service.getInitDate());
+        server.registerPairing(this.driver.getUserAccount(),vehicle.getVehicleID(),this.startStation.getId(),this.startStation.getGP(),service.getInitDate());
         System.out.println("Pairing done, can start driving");
     }
 
-    public void unPairVehicle ()
-            throws ConnectException, InvalidPairingArgsException,
+    public void unPairVehicle () throws ConnectException, InvalidPairingArgsException,
             PairingNotFoundException, ProceduralException
-    {  }
+    {
+
+    }
     // Input events from the unbonded Bluetooth channel
     public void broadcastStationID (StationID stID) throws ConnectException {
-        this.station.setId(stID);
+        if(this.startStation.getId().equals(stID)){
+            this.endStation.setId(stID);
+        } else {
+            this.startStation.setId(stID);
+        }
+
     }
+
     // Input events from the Arduino microcontroller channel
     public void startDriving () throws ConnectException, ProceduralException {
-
+        if(!vehicle.getState().equals(PMVState.NotAvailable)){
+            throw new ProceduralException("PMVehicle has incorrect state");
+        }
+        if(service == null){
+            throw new ProceduralException("An instance of JourneyService has not been created yet");
+        }
+        vehicle.setUnderWay();
+        service.setProgress(true);
     }
     public void stopDriving ()
             throws ConnectException, ProceduralException
-    {  }
+    {
+        if(!service.getProgress()){
+            throw new ProceduralException("The trip is not in progress, cannot stop driving");
+        }
+        if(!vehicle.getState().equals(PMVState.UnderWay)){
+            throw new ProceduralException("The vehicle is not underway");
+        }
+
+    }
     // Internal operations
     private void calculateValues (GeographicPoint gP, LocalDateTime date)
-    {  }
+    {
+    }
     private void calculateImport (float dis, int dur, float avSp,
                                   LocalDateTime date)
     {  }

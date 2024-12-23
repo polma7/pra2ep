@@ -63,5 +63,13 @@ public class JourneyService {
     public LocalDateTime getInitDate(){
         return this.initDate;
     }
+
+    public void setProgress(boolean progress){
+        this.inProgress = progress;
+    }
+
+    public boolean getProgress(){
+        return this.inProgress;
+    }
 }
 
