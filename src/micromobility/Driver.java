@@ -12,7 +12,7 @@ public class Driver {
     private UserAccount userAccount;
     PMVehicle tripVehicle;
 
-    public Driver(String name, String email, String telNumber, PaymentMethods methods, String bankAccount, UserAccount account){
+    public Driver(String telNumber, PaymentMethods methods, String bankAccount, UserAccount account){
         this.name = account.getUsername();
         this.email = account.getMail();
         this.telNumber = telNumber;
