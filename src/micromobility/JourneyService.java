@@ -27,37 +27,31 @@ public class JourneyService {
     //??? // The constructor/s
     // All the getter methods
     // Among the setter methods must appear these ones:
-    public void setDate(){
-        initDate = LocalDateTime.now();
-        initHour = initDate.getHour();
-    }
 
     public void setOrigin(StationID stationID, GeographicPoint gp) throws InvalidGeographicCoordinateException {
         this.origionPoint = gp;
         this.origStatID  = stationID;
     }
-    public void setServiceInit () throws InvalidGeographicCoordinateException {
+    public void setServiceInit (StationID st,GeographicPoint gp, PMVehicle vehicle, Driver driver) throws InvalidGeographicCoordinateException {
+        setOrigin(st,gp);
         this.initDate = LocalDateTime.now();
         this.inProgress = true;
-        this.origionPoint = new GeographicPoint(41.61674F,0.62218F);
         this.initHour = initDate.getHour();
+        setActors(vehicle,driver);
     }
-    public void setServiceFinish () throws InvalidGeographicCoordinateException {
+    public void setServiceFinish (GeographicPoint gp) throws InvalidGeographicCoordinateException {
         this.endDate = LocalDateTime.now();
         this.inProgress = false;
-        this.endPoint = new GeographicPoint(41.65674F,0.66218F);
+        this.endPoint = gp;
         this.distance = (float) origionPoint.CalculateDistance(endPoint);
         this.duration = initDate.compareTo(endDate);
         this.avgSpeed = distance / duration;
         this.endHour = endDate.getHour();
     }
 
-    void setDriver(Driver driver){
+    private void setActors(PMVehicle vehicle, Driver driver){
         this.driver = driver;
-    }
-
-    void setVehicle(PMVehicle vehicle){
-        this.vehicle = vehicle;
+        this.vehicle= vehicle;
     }
 
     public LocalDateTime getInitDate(){
@@ -71,5 +65,6 @@ public class JourneyService {
     public boolean getProgress(){
         return this.inProgress;
     }
+
 }
 

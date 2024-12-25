@@ -34,7 +34,7 @@ public class ServerClass implements Server{
             PMVehicle vehicle = entry.getValue();
 
             if (vehicle.getVehicleID().equals(vhID)) {
-                if(!vehicle.getState().equals(PMVState.Availbale)){
+                if(!vehicle.getState().equals(PMVState.Available)){
                     throw new PMVNotAvailException("The vehicle is not available");
                 }
             }
