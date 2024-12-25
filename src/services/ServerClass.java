@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServerClass implements Server{
+    private ArrayList<Station> stations;
     private HashMap<Station, PMVehicle> vehicles;
 
     public ServerClass(){
@@ -70,5 +71,14 @@ public class ServerClass implements Server{
     @Override
     public void registerLocation(VehicleID veh, StationID st) {
 
+    }
+
+    public Station getStation(StationID stID){
+        for(Station st : stations){
+            if(st.getId().equals(stID)){
+                return st;
+            }
+        }
+        return null;
     }
 }
