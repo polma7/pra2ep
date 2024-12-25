@@ -44,6 +44,6 @@ public class PMVehicle {
 
     public void setNotAvailb () { state = PMVState.NotAvailable; }
     public void setUnderWay () { state = PMVState.UnderWay; }
-    public void setAvailb () { state = PMVState.Availbale; }
+    public void setAvailb () { state = PMVState.Available; }
     public void setLocation (GeographicPoint gP) { location = gP; }
 }
