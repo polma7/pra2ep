@@ -1,13 +1,8 @@
 package services;
 
-import data.GeographicPoint;
-import data.StationID;
-import data.UserAccount;
-import data.VehicleID;
-import micromobility.JourneyService;
-import micromobility.PMVState;
-import micromobility.PMVehicle;
-import micromobility.Station;
+import data.*;
+import data.exceptions.geographic.InvalidGeographicCoordinateException;
+import micromobility.*;
 import micromobility.exceptions.InvalidPairingArgsException;
 import micromobility.exceptions.PMVNotAvailException;
 import micromobility.exceptions.PairingNotFoundException;
@@ -22,6 +17,8 @@ import java.util.Map;
 public class ServerClass implements Server{
     private ArrayList<Station> stations;
     private HashMap<Station, PMVehicle> vehicles;
+    private ArrayList<JourneyService> services;
+    private ArrayList<JourneyService> activeServices;
 
     public ServerClass(){
 
@@ -42,30 +39,51 @@ public class ServerClass implements Server{
     }
 
     @Override
-    public void registerPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) throws InvalidPairingArgsException, ConnectException {
+    public void registerPairing(Driver user, PMVehicle veh, StationID st, GeographicPoint loc, LocalDateTime date) throws InvalidPairingArgsException, ConnectException, InvalidGeographicCoordinateException {
         for (Map.Entry<Station, PMVehicle> entry : vehicles.entrySet()) {
             Station station = entry.getKey();
             PMVehicle vehicle = entry.getValue();
 
-            if (vehicle.getVehicleID().equals(veh) && station.getId().equals(st)) {
-                //Register pairing
+            if (vehicle.getVehicleID().equals(veh.getVehicleID()) && station.getId().equals(st)) {
+                setPairing(user,veh, st, loc, date);
+                blockVehicle(vehicle);
             }
         }
     }
 
     @Override
-    public void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date, float avSp, float dist, int dur, BigDecimal imp) throws InvalidPairingArgsException, ConnectException {
+    public void stopPairing(Driver user, PMVehicle veh, StationID st, GeographicPoint loc, LocalDateTime date, float avSp, float dist, int dur, BigDecimal imp) throws InvalidPairingArgsException, ConnectException, InvalidGeographicCoordinateException, PairingNotFoundException {
+        for(JourneyService service: activeServices){
+            if(service.getDriver().getUserAccount().equals(user.getUserAccount()) && service.getVehicle().getVehicleID().equals(veh.getVehicleID())){
+                for (Map.Entry<Station, PMVehicle> entry : vehicles.entrySet()) {
+                    Station station = entry.getKey();
+                    PMVehicle vehicle = entry.getValue();
 
+                    if (vehicle.getVehicleID().equals(veh.getVehicleID()) && station.getId().equals(st)) {
+                        freeVehicle(vehicle);
+                    }
+                }
+                service.setServiceFinish(loc, date, avSp, dist, dur, imp);
+                unPairRegisterService(service);
+            }
+        }
     }
 
     @Override
-    public void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) {
-
+    public void setPairing(Driver user, PMVehicle veh, StationID st, GeographicPoint loc, LocalDateTime date) throws InvalidGeographicCoordinateException {
+        JourneyService s = new JourneyService();
+        s.setServiceInit(st, loc, veh, user, date);
     }
 
     @Override
     public void unPairRegisterService(JourneyService s) throws PairingNotFoundException {
-
+        for(JourneyService service : services){
+            if(service.getServiceID().equals(s.getServiceID())){
+                activeServices.remove(service);
+                services.add(service);
+            }
+        }
+        throw new PairingNotFoundException("The service with id " + s.getServiceID() + " does not exist");
     }
 
     @Override
@@ -80,5 +98,13 @@ public class ServerClass implements Server{
             }
         }
         return null;
+    }
+
+    private void blockVehicle(PMVehicle vehicle){
+        vehicle.setNotAvailb();
+    }
+
+    private void freeVehicle(PMVehicle vehicle){
+        vehicle.setAvailb();
     }
 }

@@ -6,8 +6,11 @@ import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import micromobility.exceptions.*;
 import services.ServerClass;
 
+import java.math.BigDecimal;
 import java.net.ConnectException;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class JourneyRealizeHandler{
     private PMVehicle vehicle;
@@ -30,13 +33,12 @@ public class JourneyRealizeHandler{
         if(vehicle.getQr() == null){
             throw new CorruptedImgException("Qr code is corrupted");
         }
+        this.vehicle = vehicle;
         server.checkPMVAvail(vehicle.getVehicleID());
         this.service = new JourneyService();
-        this.vehicle.setNotAvailb();
         driver.setTripVehicle(vehicle);
-        service.setServiceInit(currentStation.getId(),currentStation.getGP(),vehicle,driver);
-        //Falta registerPairing en server
-        server.registerPairing(this.driver.getUserAccount(),vehicle.getVehicleID(),this.currentStation.getId(),this.currentStation.getGP(),service.getInitDate());
+        service.setServiceInit(currentStation.getId(),currentStation.getGP(),vehicle,driver, LocalDateTime.now());
+        server.registerPairing(this.driver,vehicle,this.currentStation.getId(),this.currentStation.getGP(),service.getInitDate());
         System.out.println("Pairing done, can start driving");
     }
 
@@ -57,7 +59,14 @@ public class JourneyRealizeHandler{
         if(this.currentStation == null){
             throw new ProceduralException("The vehicle is not in a PMV Station");
         }
-        service.setServiceFinish(currentStation.getGP());
+        var avgSp = calculateAvgSpeed();
+        var distance = (int) calculateDistance();
+        var dur = calculateDuraiton();
+        var date = LocalDateTime.now();
+        service.setServiceFinish(currentStation.getGP(), date, avgSp, distance,(int) dur, calculateImport(distance, (int) dur, avgSp, date));
+        server.stopPairing(driver, vehicle, service.getEndStatID(), service.getEndPoint(),service.getEndDate(),service.getAvgSpeed(), service.getDistance(), (int) service.getDuration(), service.getImporte());
+        service.setProgress(false);
+        driver.unsetTripVehicle();
     }
     // Input events from the unbonded Bluetooth channel
     public void broadcastStationID (StationID stID) throws ConnectException {
@@ -87,16 +96,45 @@ public class JourneyRealizeHandler{
         }
     }
     // Internal operations
-    private void calculateValues (GeographicPoint gP, LocalDateTime date)
+    private float calculateDistance()
     {
+        GeographicPoint start = service.getOriginPoint();
+        GeographicPoint end  = service.getEndPoint();
+
+        return (float) start.CalculateDistance(end);
     }
-    private void calculateImport (float dis, int dur, float avSp,
+    private BigDecimal calculateImport (float dis, int dur, float avSp,
                                   LocalDateTime date)
-    {  }
+    {
+        double tarifaBase = 1.5;
+        double tarifaPremium = 2.0;
+
+        LocalDateTime inicioRango = date.with(LocalTime.of(12, 0));
+        LocalDateTime finRango = date.with(LocalTime.of(23, 59));
+
+        boolean esTarifaPremium = !date.isBefore(inicioRango) && !date.isAfter(finRango);
+
+        double tarifaPorKm = esTarifaPremium ? tarifaPremium : tarifaBase;
+        return BigDecimal.valueOf((tarifaPorKm * dis) + (dur * 0.1) + (0.05 * avSp));
+    }
 
 
     private boolean checkConnection(){
         return true;
+    }
+
+    private float calculateAvgSpeed(){
+        var totalSeconds = calculateDuraiton();
+
+        float totalHours = totalSeconds / 3600.0f;
+
+
+        return calculateDistance() / totalHours;
+    }
+
+    private long calculateDuraiton(){
+        Duration duration = Duration.between(service.getInitDate(), service.getEndDate());
+        return duration.getSeconds();
     }
     //(. . .) // Setter methods for injecting dependences
 }
