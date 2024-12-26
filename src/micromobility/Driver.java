@@ -7,16 +7,14 @@ public class Driver {
     private String name;
     private String email;
     private String telNumber;
-    private PaymentMethods methods;
     private String bankAccount;
     private UserAccount userAccount;
     PMVehicle tripVehicle;
 
-    public Driver(String telNumber, PaymentMethods methods, String bankAccount, UserAccount account){
+    public Driver(String telNumber, String bankAccount, UserAccount account){
         this.name = account.getUsername();
         this.email = account.getMail();
         this.telNumber = telNumber;
-        this.methods = methods;
         this.bankAccount = bankAccount;
         this.userAccount = account;
     }

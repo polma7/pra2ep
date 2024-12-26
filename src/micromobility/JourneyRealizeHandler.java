@@ -18,6 +18,7 @@ public class JourneyRealizeHandler{
     private Station currentStation;
     private Driver driver;
     private ServerClass server;
+    private boolean state;
 
     public JourneyRealizeHandler(Driver driver){
         this.driver = driver;
@@ -34,6 +35,7 @@ public class JourneyRealizeHandler{
             throw new CorruptedImgException("Qr code is corrupted");
         }
         this.vehicle = vehicle;
+        this.state = true;
         server.checkPMVAvail(vehicle.getVehicleID());
         this.service = new JourneyService();
         driver.setTripVehicle(vehicle);
@@ -120,7 +122,7 @@ public class JourneyRealizeHandler{
 
 
     private boolean checkConnection(){
-        return true;
+        return this.state;
     }
 
     private float calculateAvgSpeed(){
@@ -134,7 +136,7 @@ public class JourneyRealizeHandler{
 
     private long calculateDuraiton(){
         Duration duration = Duration.between(service.getInitDate(), service.getEndDate());
-        return duration.getSeconds();
+        return duration.getSeconds() / 60; //para calcularlo en minutos
     }
     //(. . .) // Setter methods for injecting dependences
 }
