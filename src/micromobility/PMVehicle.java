@@ -19,6 +19,10 @@ public class PMVehicle {
         this.location = location;
         this.qr = qr;
     }
+
+    public PMVehicle(VehicleID id){
+        this.vehicleID = id;
+    }
     //??? // The constructor/s
     // All the getter methods
 // The setter methods to be used are only the following ones

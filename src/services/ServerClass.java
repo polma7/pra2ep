@@ -21,8 +21,11 @@ public class ServerClass implements Server{
     private ArrayList<JourneyService> services;
     private ArrayList<JourneyService> activeServices;
 
-    public ServerClass(){
-
+    public ServerClass(ArrayList<Station> stations, HashMap<Station, List<PMVehicle>> vehicles){
+        this.stations = stations;
+        this.vehicles = vehicles;
+        this.services = new ArrayList<>();
+        this.activeServices = new ArrayList<>();
     }
 
     @Override
@@ -43,19 +46,25 @@ public class ServerClass implements Server{
 
     @Override
     public void registerPairing(Driver user, PMVehicle veh, StationID st, GeographicPoint loc, LocalDateTime date) throws InvalidPairingArgsException, ConnectException, InvalidGeographicCoordinateException {
+        boolean paired = false;
         for (Map.Entry<Station, List<PMVehicle>> entry : vehicles.entrySet()) {
             Station station = entry.getKey();
             for(PMVehicle vehicle : entry.getValue()) {
                 if (vehicle.getVehicleID().equals(veh.getVehicleID()) && station.getId().equals(st)) {
                     setPairing(user,veh, st, loc, date);
                     blockVehicle(vehicle);
+                    paired = true;
                 }
             }
+        }
+        if(!paired){
+            throw new InvalidPairingArgsException("The pairing failed because one of the arguments was incorrect");
         }
     }
 
     @Override
     public void stopPairing(Driver user, PMVehicle veh, StationID st, GeographicPoint loc, LocalDateTime date, float avSp, float dist, int dur, BigDecimal imp) throws InvalidPairingArgsException, ConnectException, InvalidGeographicCoordinateException, PairingNotFoundException {
+        boolean unpaired = false;
         for(JourneyService service: activeServices){
             if(service.getDriver().getUserAccount().equals(user.getUserAccount()) && service.getVehicle().getVehicleID().equals(veh.getVehicleID())){
                 for (Map.Entry<Station, List<PMVehicle>> entry : vehicles.entrySet()) {
@@ -69,7 +78,11 @@ public class ServerClass implements Server{
                 service.setServiceFinish(loc, date, avSp, dist, dur, imp);
                 unPairRegisterService(service);
                 registerLocation(veh.getVehicleID(), st);
+                unpaired = true;
             }
+        }
+        if(!unpaired){
+            throw new InvalidPairingArgsException("The unpairing failed because one of the arguments was incorrect");
         }
     }
 
@@ -123,6 +136,20 @@ public class ServerClass implements Server{
         return null;
     }
 
+    public List<JourneyService> getActiveServices() {
+        return new ArrayList<>(activeServices);
+    }
+
+    public List<PMVehicle> getVehicles(StationID stationID) {
+        for (Map.Entry<Station, List<PMVehicle>> entry : vehicles.entrySet()) {
+            Station station = entry.getKey();
+            if (station.getId().equals(stationID)) {
+                return new ArrayList<>(entry.getValue());
+            }
+        }
+        return new ArrayList<>();
+    }
+
     private void blockVehicle(PMVehicle vehicle){
         vehicle.setNotAvailb();
     }
@@ -130,4 +157,6 @@ public class ServerClass implements Server{
     private void freeVehicle(PMVehicle vehicle){
         vehicle.setAvailb();
     }
+
+
 }

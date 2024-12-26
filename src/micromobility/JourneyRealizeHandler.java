@@ -22,7 +22,6 @@ public class JourneyRealizeHandler{
 
     public JourneyRealizeHandler(Driver driver){
         this.driver = driver;
-        this.server = new ServerClass();
     }
 
     // Different input events that intervene

@@ -17,6 +17,10 @@ public class Station {
         this.numVehicles = numVehicles;
         availability = capacity - numVehicles > 0;
     }
+    public Station(StationID stId, GeographicPoint location){
+        this.stationID = stId;
+        this.location = location;
+    }
 
     public StationID getId(){
         return this.stationID;
