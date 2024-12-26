@@ -1,4 +1,4 @@
-package data.tests;
+package data;
 import data.GeographicPoint;
 import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import org.junit.jupiter.api.BeforeEach;

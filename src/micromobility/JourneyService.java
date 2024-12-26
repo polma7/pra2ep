@@ -1,24 +1,27 @@
 package micromobility;
 
 import data.GeographicPoint;
+import data.ServiceID;
 import data.StationID;
 import data.exceptions.geographic.InvalidGeographicCoordinateException;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 public class JourneyService {
     private LocalDateTime initDate;
     private StationID origStatID;
     private int initHour;
-    private int duration;
+    private long duration;
     private float distance;
     private float avgSpeed;
     private GeographicPoint origionPoint;
     private GeographicPoint endPoint;
     private LocalDateTime endDate;
     private int endHour;
-    private  float importe;
-    //private ServiceID serviceID;
+    private double importe;
+    private ServiceID serviceID;
     private boolean inProgress;
     private StationID endStatID;
     private Driver driver;
@@ -44,9 +47,10 @@ public class JourneyService {
         this.inProgress = false;
         this.endPoint = gp;
         this.distance = (float) origionPoint.CalculateDistance(endPoint);
-        this.duration = initDate.compareTo(endDate);
+        this.duration = ChronoUnit.MINUTES.between(initDate, endDate);
         this.avgSpeed = distance / duration;
         this.endHour = endDate.getHour();
+        calculateImport();
     }
 
     private void setActors(PMVehicle vehicle, Driver driver){
@@ -64,6 +68,19 @@ public class JourneyService {
 
     public boolean getProgress(){
         return this.inProgress;
+    }
+
+    private void calculateImport(){
+        double tarifaBase = 1.5;
+        double tarifaPremium = 2.0;
+
+        LocalDateTime inicioRango = endDate.with(LocalTime.of(12, 0));
+        LocalDateTime finRango = endDate.with(LocalTime.of(23, 59));
+
+        boolean esTarifaPremium = !endDate.isBefore(inicioRango) && !endDate.isAfter(finRango);
+
+        double tarifaPorKm = esTarifaPremium ? tarifaPremium : tarifaBase;
+        this.importe = (tarifaPorKm * this.distance) + (this.duration * 0.1);
     }
 
 }

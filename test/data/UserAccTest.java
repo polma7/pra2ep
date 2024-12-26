@@ -1,4 +1,4 @@
-package data.tests;
+package data;
 
 import data.UserAccount;
 import data.exceptions.useracc.InvalidEmailFormatException;

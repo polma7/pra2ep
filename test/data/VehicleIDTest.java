@@ -1,4 +1,4 @@
-package data.tests;
+package data;
 
 import data.VehicleID;
 import data.exceptions.vehicleid.InvalidVehicleIDFormatException;

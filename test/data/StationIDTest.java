@@ -1,4 +1,4 @@
-package data.tests;
+package data;
 
 import data.StationID;
 import data.exceptions.stationId.InvalidStationIDFormatException;
