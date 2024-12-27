@@ -8,6 +8,7 @@ import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 public class JourneyService {
@@ -43,6 +44,7 @@ public class JourneyService {
         this.inProgress = true;
         this.initHour = initDate.getHour();
         setActors(vehicle,driver);
+        this.serviceID = null;
     }
 
     public void setServiceFinish (GeographicPoint loc, LocalDateTime date, float avSp, float dist, int dur, BigDecimal imp) throws InvalidGeographicCoordinateException {
@@ -83,23 +85,21 @@ public class JourneyService {
     public PMVehicle getVehicle(){
         return this.vehicle;
     }
-    private void calculateImport(){
-        double tarifaBase = 1.5;
-        double tarifaPremium = 2.0;
 
-        LocalDateTime inicioRango = endDate.with(LocalTime.of(12, 0));
-        LocalDateTime finRango = endDate.with(LocalTime.of(23, 59));
+    public void setId() {
+        if (serviceID == null) {
+            Random random = new Random();
+            char firstLetter = (char) ('A' + random.nextInt(26));
+            char secondLetter = (char) ('A' + random.nextInt(26));
+            String letterPart = "" + firstLetter + secondLetter;
 
-        boolean esTarifaPremium = !endDate.isBefore(inicioRango) && !endDate.isAfter(finRango);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            String formattedDate = endDate.format(formatter);
 
-        double tarifaPorKm = esTarifaPremium ? tarifaPremium : tarifaBase;
-        this.importe = BigDecimal.valueOf((tarifaPorKm * this.distance) + (this.duration * 0.1));
-    }
+            String id = letterPart +"-" + formattedDate;
 
-    public void setId(){
-        Random random = new Random();
-        int randomNumber = 10 + random.nextInt(90);
-        this.serviceID = new ServiceID(randomNumber + "-" + endDate.toString());
+            this.serviceID = new ServiceID(id);
+        }
     }
     public StationID getEndStatID(){
         return this.endStatID;
@@ -135,6 +135,9 @@ public class JourneyService {
 
     public GeographicPoint getOriginPoint() {
         return origionPoint;
+    }
+    public void setEndDate(){
+        this.endDate = LocalDateTime.now();
     }
 }
 

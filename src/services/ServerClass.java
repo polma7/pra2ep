@@ -90,6 +90,7 @@ public class ServerClass implements Server{
     public void setPairing(Driver user, PMVehicle veh, StationID st, GeographicPoint loc, LocalDateTime date) throws InvalidGeographicCoordinateException {
         JourneyService s = new JourneyService();
         s.setServiceInit(st, loc, veh, user, date);
+        this.activeServices.add(s);
     }
 
     @Override

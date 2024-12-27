@@ -46,14 +46,13 @@ public class ServerTest {
 
     @BeforeEach
     public void setUp() throws InvalidGeographicCoordinateException, NullOrEmptyUserAccountException, InvalidEmailFormatException, WeakPasswordException, InvalidVehicleIDFormatException, NullOrEmptyVehicleIDException, ShortStationIDException, NonAlphanumericStationIDException, InvalidStationIDFormatException, NullStationIDException {
-        // Crear estaciones
         station1 = new Station(new StationID("AB123"), new GeographicPoint(40.4168f, -3.7038f));
         station2 = new Station(new StationID("CD456"), new GeographicPoint(41.3879f, 2.16992f));
         stationID1 = station1.getId();
         stationID2 = station2.getId();
 
-        vehicle1 = new PMVehicle(new VehicleID("AAA-123-45"));
-        vehicle2 = new PMVehicle(new VehicleID("BBB-002-03"));
+        vehicle1 = new PMVehicle(new VehicleID("AAA-123-BC"));
+        vehicle2 = new PMVehicle(new VehicleID("BBB-002-CD"));
         vehicle1.setAvailb();
         vehicle2.setAvailb();
         vehicleID1 = vehicle1.getVehicleID();
