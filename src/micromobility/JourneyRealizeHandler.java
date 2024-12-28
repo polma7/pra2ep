@@ -24,6 +24,10 @@ public class JourneyRealizeHandler{
         this.driver = driver;
     }
 
+    public ServerClass getServer() {
+        return this.server;
+    }
+
     // Different input events that intervene
     // User interface input events
     public void scanQR (PMVehicle vehicle) throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException, ProceduralException, InvalidGeographicCoordinateException {
