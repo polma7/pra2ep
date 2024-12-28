@@ -4,6 +4,7 @@ import data.GeographicPoint;
 import data.StationID;
 import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import micromobility.exceptions.*;
+import payment.exceptions.NotEnoughWalletException;
 import services.ServerClass;
 
 import java.math.BigDecimal;
@@ -142,4 +143,17 @@ public class JourneyRealizeHandler{
         return duration.getSeconds() / 60; //para calcularlo en minutos
     }
     //(. . .) // Setter methods for injecting dependences
+
+    public void selectPaymentMethod (char opt) throws ProceduralException,
+            NotEnoughWalletException, ConnectException
+    {
+        if(opt ==  'w'){
+            realizePayment(service.getImporte());
+        }
+    }
+    // Specific internal operation
+    private void realizePayment (BigDecimal imp) throws NotEnoughWalletException, ConnectException {
+        server.registerPayment(service.getServiceID(), this.driver, service.getImporte(), this.driver.getPayMethod());
+
+    }
 }

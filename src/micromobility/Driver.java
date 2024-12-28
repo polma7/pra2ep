@@ -2,20 +2,22 @@ package micromobility;
 
 import com.sun.jdi.PathSearchingVirtualMachine;
 import data.UserAccount;
+import payment.Wallet;
 
 public class Driver {
     private String name;
     private String email;
     private String telNumber;
-    private String bankAccount;
+    private Wallet wallet;
     private UserAccount userAccount;
-    PMVehicle tripVehicle;
+    private PMVehicle tripVehicle;
+    private char payMethod = 'w';
 
-    public Driver(String telNumber, String bankAccount, UserAccount account){
+    public Driver(String telNumber, Wallet wallet, UserAccount account){
         this.name = account.getUsername();
         this.email = account.getMail();
         this.telNumber = telNumber;
-        this.bankAccount = bankAccount;
+        this.wallet = wallet;
         this.userAccount = account;
     }
 
@@ -29,5 +31,11 @@ public class Driver {
 
     public UserAccount getUserAccount() {
         return userAccount;
+    }
+    public char getPayMethod(){
+        return this.payMethod;
+    }
+    public Wallet getWallet(){
+        return this.wallet;
     }
 }

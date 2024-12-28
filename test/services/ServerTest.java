@@ -18,6 +18,7 @@ import micromobility.exceptions.PairingNotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import payment.Wallet;
 
 import java.math.BigDecimal;
 import java.net.ConnectException;
@@ -68,7 +69,7 @@ public class ServerTest {
         endTime = startTime.plusMinutes(30);
 
         UserAccount userAccount = new UserAccount("Driver1", "driver1@example.com", "1234567*");
-        driver = new Driver("123456789", "BANK123", userAccount);
+        driver = new Driver("123456789", new Wallet(BigDecimal.valueOf(100L)), userAccount);
 
         server = new ServerClass(new ArrayList<>(List.of(station1, station2)), vehicles);
     }

@@ -6,6 +6,7 @@ import micromobility.*;
 import micromobility.exceptions.InvalidPairingArgsException;
 import micromobility.exceptions.PMVNotAvailException;
 import micromobility.exceptions.PairingNotFoundException;
+import payment.Payment;
 
 import java.math.BigDecimal;
 import java.net.ConnectException;
@@ -20,7 +21,7 @@ public class ServerClass implements Server{
     private HashMap<Station, List<PMVehicle>> vehicles;
     private ArrayList<JourneyService> services;
     private ArrayList<JourneyService> activeServices;
-
+    private ArrayList<Payment> payments;
     public ServerClass(ArrayList<Station> stations, HashMap<Station, List<PMVehicle>> vehicles){
         this.stations = stations;
         this.vehicles = vehicles;
@@ -157,6 +158,12 @@ public class ServerClass implements Server{
 
     private void freeVehicle(PMVehicle vehicle){
         vehicle.setAvailb();
+    }
+
+    public void registerPayment(ServiceID servID, Driver user, BigDecimal imp,
+                         char payMeth) throws ConnectException{
+        payments.add(new Payment(user,servID,payMeth,imp));
+
     }
 
 
