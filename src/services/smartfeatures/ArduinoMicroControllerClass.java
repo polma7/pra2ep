@@ -65,6 +65,7 @@ public class ArduinoMicroControllerClass implements ArduinoMicroController {
         if (phisicalEx) {
             throw new PMVPhisicalException("Fallo en los frenos");
         }
+        isDriving = false;
     }
 
     @Override

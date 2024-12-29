@@ -21,12 +21,16 @@ public class JourneyRealizeHandler{
     private ServerClass server;
     private boolean state;
 
-    public JourneyRealizeHandler(Driver driver){
+    public JourneyRealizeHandler (Driver driver){
         this.driver = driver;
     }
 
-    public ServerClass getServer() {
-        return this.server;
+    public Station getCurrentStation () {
+        return this.currentStation;
+    }
+
+    public void setCurrentStation (Station currentStation) {
+        this.currentStation = currentStation;
     }
 
     // Different input events that intervene
@@ -76,7 +80,11 @@ public class JourneyRealizeHandler{
     }
     // Input events from the unbonded Bluetooth channel
     public void broadcastStationID (StationID stID) throws ConnectException {
-        this.currentStation = server.getStation(stID);
+        try {
+            System.out.println("Id de la estación és " + stID.getId());
+        } catch (Exception e) {
+            throw new ConnectException(); // Simula error al transmitir el id
+        }
     }
 
     // Input events from the Arduino microcontroller channel

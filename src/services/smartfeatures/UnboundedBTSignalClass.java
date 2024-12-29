@@ -1,13 +1,12 @@
 package services.smartfeatures;
 
 import micromobility.JourneyRealizeHandler;
-import services.ServerClass;
 
 import java.net.ConnectException;
 
 public class UnboundedBTSignalClass implements UnbondedBTSignal {
     private final JourneyRealizeHandler handler;
-    private final int BROADCAST_INTERVAL = 5000;
+    private final int BROADCAST_INTERVAL = 1000;
 
     private boolean connectEx = false;
 
@@ -19,15 +18,17 @@ public class UnboundedBTSignalClass implements UnbondedBTSignal {
         this.handler = handler;
         this.connectEx = connectEx;
     }
-    public void BTbroadcast () throws ConnectException {
-        ServerClass server = handler.getServer();
-        while (true) {
-            try {
-                Thread.sleep(5000);
-                handler.broadcastStationID();
-            } catch (Exception e) {
-                throw new RuntimeException(new ConnectException("Error en la conexión"));
-            }
+
+    @Override
+    public void BTbroadcast () throws ConnectException, InterruptedException {
+        if (connectEx) {
+            throw new ConnectException();
+        }
+
+        // Se hace un numero finito de iteraciones para simplificar la implementacion
+        for (int i=0; i<10; i++) {
+            handler.broadcastStationID(handler.getCurrentStation().getId());
+            Thread.sleep(BROADCAST_INTERVAL);
         }
     }
 }

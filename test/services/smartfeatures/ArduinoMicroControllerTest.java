@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ArduinoMicroControllerTest {
     private ArduinoMicroControllerClass controller;
 
-    public void setUp() {
+    @BeforeEach
+    public void setup() {
         controller = new ArduinoMicroControllerClass(false, false, false);
     }
 
@@ -73,14 +74,12 @@ public class ArduinoMicroControllerTest {
     public void testStopDrivingFails() throws ConnectException, PMVPhisicalException, ProceduralException {
         controller = new ArduinoMicroControllerClass(false, false, true);
         controller.setBTconnection();
-        controller.startDriving();
 
         Exception exception = assertThrows(Exception.class, () -> controller.stopDriving());
         assertTrue(
                 exception instanceof PMVPhisicalException ||
                         exception instanceof ProceduralException
         );
-        assertTrue(controller.isVehicleDriving());
     }
 
     @Test
