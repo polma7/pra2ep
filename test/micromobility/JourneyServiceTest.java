@@ -23,7 +23,6 @@ public class JourneyServiceTest {
 
     @Test
     public void testSetIdGeneratesValidId() {
-        // Crear una instancia de la clase con un ejemplo de fecha válida
         LocalDate endDate = LocalDate.of(2024, 12, 31);
 
         service1.setId();

@@ -139,5 +139,9 @@ public class JourneyService {
     public void setEndDate(){
         this.endDate = LocalDateTime.now();
     }
+
+    public void setEndPoint(GeographicPoint endPoint){
+        this.endPoint = endPoint;
+    }
 }
 

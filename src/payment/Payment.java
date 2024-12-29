@@ -19,7 +19,12 @@ public class Payment {
         this.importe = importe;
     }
 
-    public void deductImportFromWallet(){
+    public void doPayment(){
+        if (this.payMethod == 'w') {
+            deductImportFromWallet();
+        }
+    }
+    private void deductImportFromWallet(){
         WalletPayment payment = new WalletPayment(this.driver, this.service, this.payMethod, this.importe);
         payment.deductImport();
     }

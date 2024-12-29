@@ -43,7 +43,6 @@ public class UnboundedBTSignalTest {
         wallet = new Wallet(amount);
         driver = new Driver("1", wallet, account);
         handler = new JourneyRealizeHandler(driver);
-
         stID = new StationID("AB123");
         geographicPoint = new GeographicPoint(0, 0);
         station = new Station(stID, geographicPoint);

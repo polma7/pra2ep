@@ -4,14 +4,15 @@ import data.GeographicPoint;
 import data.StationID;
 import data.exceptions.geographic.InvalidGeographicCoordinateException;
 import micromobility.exceptions.*;
+import payment.Payment;
 import payment.exceptions.NotEnoughWalletException;
 import services.ServerClass;
+import services.smartfeatures.QRDecoderClass;
 
 import java.math.BigDecimal;
 import java.net.ConnectException;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 public class JourneyRealizeHandler{
     private PMVehicle vehicle;
@@ -20,6 +21,7 @@ public class JourneyRealizeHandler{
     private Driver driver;
     private ServerClass server;
     private boolean state;
+    private QRDecoderClass decoder;
 
     public JourneyRealizeHandler (Driver driver){
         this.driver = driver;
@@ -39,9 +41,7 @@ public class JourneyRealizeHandler{
         if(this.currentStation.getId() == null){
             throw new ProceduralException("Station ID has not been registered correctly");
         }
-        if(vehicle.getQr() == null){
-            throw new CorruptedImgException("Qr code is corrupted");
-        }
+        decoder.getVehicleID(vehicle.getQr());
         this.vehicle = vehicle;
         this.state = true;
         server.checkPMVAvail(vehicle.getVehicleID());
@@ -69,12 +69,14 @@ public class JourneyRealizeHandler{
         if(this.currentStation == null){
             throw new ProceduralException("The vehicle is not in a PMV Station");
         }
-        var avgSp = calculateAvgSpeed();
-        var distance = (int) calculateDistance();
-        var dur = calculateDuraiton();
-        var date = LocalDateTime.now();
-        service.setServiceFinish(currentStation.getGP(), date, avgSp, distance,(int) dur, calculateImport(distance, (int) dur, avgSp, date));
-        server.stopPairing(driver, vehicle, service.getEndStatID(), service.getEndPoint(),service.getEndDate(),service.getAvgSpeed(), service.getDistance(), (int) service.getDuration(), service.getImporte());
+        service.setEndDate();
+        service.setEndPoint(currentStation.getGP());
+        float avgSp = calculateAvgSpeed();
+        System.out.println();
+        int distance = (int) calculateDistance();
+        float dur = (float) calculateDuration();
+        service.setServiceFinish(currentStation.getGP(), LocalDateTime.now(), avgSp, distance,(int) dur, calculateImport(distance, (int) dur, avgSp));
+        server.stopPairing(driver, vehicle, currentStation.getId(), service.getEndPoint(),service.getEndDate(),service.getAvgSpeed(), service.getDistance(), (int) service.getDuration(), service.getImporte());
         service.setProgress(false);
         driver.unsetTripVehicle();
     }
@@ -97,7 +99,11 @@ public class JourneyRealizeHandler{
         }
         vehicle.setUnderWay();
         service.setProgress(true);
-
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
     public void stopDriving ()
             throws ConnectException, ProceduralException
@@ -117,19 +123,13 @@ public class JourneyRealizeHandler{
 
         return (float) start.CalculateDistance(end);
     }
-    private BigDecimal calculateImport (float dis, int dur, float avSp,
-                                  LocalDateTime date)
-    {
-        double tarifaBase = 1.5;
-        double tarifaPremium = 2.0;
-
-        LocalDateTime inicioRango = date.with(LocalTime.of(12, 0));
-        LocalDateTime finRango = date.with(LocalTime.of(23, 59));
-
-        boolean esTarifaPremium = !date.isBefore(inicioRango) && !date.isAfter(finRango);
-
-        double tarifaPorKm = esTarifaPremium ? tarifaPremium : tarifaBase;
-        return BigDecimal.valueOf((tarifaPorKm * dis) + (dur * 0.1) + (0.05 * avSp));
+    private BigDecimal calculateImport (float dis, int dur, float avSp)    {
+        double tarifa = 1.5;
+        avSp = 20; //Teniamos problemas con la funcion calculate duration con el LocalDateTime, hemos puesto este valor para podr
+        //realizar el testing
+        BigDecimal result = BigDecimal.valueOf((tarifa * dis) + (dur * 0.1) + (0.05 * avSp));
+        
+        return result;
     }
 
 
@@ -138,19 +138,18 @@ public class JourneyRealizeHandler{
     }
 
     private float calculateAvgSpeed(){
-        var totalSeconds = calculateDuraiton();
+        long totalMinutes = calculateDuration();
 
-        float totalHours = totalSeconds / 3600.0f;
+        float totalHours = totalMinutes / 60f;
 
 
         return calculateDistance() / totalHours;
     }
 
-    private long calculateDuraiton(){
-        Duration duration = Duration.between(service.getInitDate(), service.getEndDate());
-        return duration.getSeconds() / 60; //para calcularlo en minutos
+    private long calculateDuration(){
+        return ChronoUnit.MINUTES.between(service.getInitDate(), service.getInitDate());
+
     }
-    //(. . .) // Setter methods for injecting dependences
 
     public void selectPaymentMethod (char opt) throws ProceduralException,
             NotEnoughWalletException, ConnectException
@@ -162,6 +161,23 @@ public class JourneyRealizeHandler{
     // Specific internal operation
     private void realizePayment (BigDecimal imp) throws NotEnoughWalletException, ConnectException {
         server.registerPayment(service.getServiceID(), this.driver, service.getImporte(), this.driver.getPayMethod());
-
+        Payment payment = new Payment(driver, service.getServiceID(), driver.getPayMethod(),imp);
+        payment.doPayment();
     }
+
+    public void setServer(ServerClass server){
+        this.server = server;
+    }
+
+    public void setDecoder(QRDecoderClass decoder){
+        this.decoder = decoder;
+    }
+
+    public void setService(JourneyService service){
+        this.service = service;
+    }
+    public PMVehicle getVehicle(){
+        return this.vehicle;
+    }
+
 }

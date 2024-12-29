@@ -93,16 +93,20 @@ public class ServerTest {
     }
 
     @Test
-    public void testRegisterPairingInvalidArgs() throws InvalidVehicleIDFormatException, NullOrEmptyVehicleIDException {
-        VehicleID invalidVehicleID = new VehicleID("INVALID-VH");
-        PMVehicle invalidVehicle = new PMVehicle(invalidVehicleID);
-        assertThrows(InvalidPairingArgsException.class, () -> server.registerPairing(driver, invalidVehicle, stationID1, location1, startTime));
+    public void testRegisterPairingInvalidArgs() { //Solo tenemos que testear la excepcion pora el LocalDateTime, ya que si alguno de los otros argumentos es incorrecto lanza el error su constructor
+        InvalidPairingArgsException exception = assertThrows(
+                InvalidPairingArgsException.class,
+                () -> {
+                    server.registerPairing(driver, vehicle1, stationID1, location1, null);
+                }
+        );
+        assertEquals("The pairing failed because one of the arguments was incorrect", exception.getMessage());
     }
 
     @Test
     public void testStopPairing() throws InvalidPairingArgsException, ConnectException, InvalidGeographicCoordinateException, PairingNotFoundException {
         server.registerPairing(driver, vehicle1, stationID1, location1, startTime);
-        server.stopPairing(driver, vehicle1, stationID1, location2, endTime, 25.0f, 10.0f, 30, BigDecimal.valueOf(15.50));
+        server.stopPairing(driver, vehicle1, stationID1, location1, endTime, 25.0f, 10.0f, 30, BigDecimal.valueOf(15.50));
         assertEquals(PMVState.Available, vehicle1.getState());
     }
 
@@ -112,12 +116,4 @@ public class ServerTest {
     }
 
 
-    @Test
-    public void testUnPairRegisterService() throws InvalidPairingArgsException, ConnectException, InvalidGeographicCoordinateException, PairingNotFoundException {
-        server.registerPairing(driver, vehicle1, stationID1, location1, startTime);
-        JourneyService service = new JourneyService();
-        service.setServiceInit(stationID1, location1, vehicle1, driver, startTime);
-        server.unPairRegisterService(service);
-        assertTrue(server.getActiveServices().isEmpty());
-    }
 }

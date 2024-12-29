@@ -23,6 +23,10 @@ public class PMVehicle {
     public PMVehicle(VehicleID id){
         this.vehicleID = id;
     }
+    public PMVehicle(VehicleID id, BufferedImage qr){
+        this.vehicleID = id;
+        this.qr = qr;
+    }
     //??? // The constructor/s
     // All the getter methods
 // The setter methods to be used are only the following ones
